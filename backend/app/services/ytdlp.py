@@ -23,6 +23,12 @@ _BASE: dict[str, Any] = {
     "writesubtitles": False,
     "writeautomaticsub": False,
     "writethumbnail": False,
+    # Return the info dict even when only storyboard "formats" are available
+    # (metadata / caption probing never needs a real download URL).
+    "ignore_no_formats_error": True,
+    # Let yt-dlp fetch + cache its EJS solver script so it can crack YouTube's
+    # nsig / "n challenge" (needed for real video formats in the render step).
+    "remote_components": ["ejs:github"],
 }
 
 
