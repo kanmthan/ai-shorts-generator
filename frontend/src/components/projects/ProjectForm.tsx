@@ -43,7 +43,7 @@ export function ProjectForm() {
   const [url, setUrl] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     const trimmed = url.trim();
 

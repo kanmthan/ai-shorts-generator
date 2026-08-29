@@ -70,7 +70,7 @@ export function CaptionForm({ short }: CaptionFormProps) {
     short.end_time,
   ]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     const payload: ShortUpdatePayload = {
       title: title.trim(),

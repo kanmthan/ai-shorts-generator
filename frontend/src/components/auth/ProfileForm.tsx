@@ -41,7 +41,7 @@ export function ProfileForm() {
     setFullName(user?.full_name ?? '');
   }, [user?.full_name]);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setIsSubmitting(true);
     try {
