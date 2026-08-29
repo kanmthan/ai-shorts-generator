@@ -37,15 +37,28 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Runtime system deps:
-#   ffmpeg    - video/audio pipeline (Module 4 render)
-#   libpq5    - psycopg2 runtime
-#   ca-certs  - outbound HTTPS (Anthropic, Pexels, yt-dlp)
+#   ffmpeg        - video/audio pipeline (Module 4 render)
+#   libpq5        - psycopg2 runtime
+#   ca-certs      - outbound HTTPS (Anthropic, Pexels, yt-dlp)
+#   curl, unzip   - fetch the Deno binary below
 # yt-dlp itself is a Python package from requirements.txt.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
         libpq5 \
         ca-certificates \
+        curl \
+        unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Deno: JS runtime yt-dlp uses to solve YouTube's "n challenge" (nsig).
+# Without it YouTube returns only storyboard images - no video/audio formats.
+RUN curl -fsSL https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip \
+        -o /tmp/deno.zip \
+    && unzip -o /tmp/deno.zip -d /usr/local/bin \
+    && rm /tmp/deno.zip \
+    && chmod +x /usr/local/bin/deno \
+    && apt-get purge -y unzip && apt-get autoremove -y \
+    && /usr/local/bin/deno --version
 
 COPY --from=builder /wheels /wheels
 COPY requirements.txt .
