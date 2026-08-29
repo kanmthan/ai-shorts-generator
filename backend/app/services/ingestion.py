@@ -80,6 +80,21 @@ def fetch_metadata(url: str) -> VideoMeta:
     except (TypeError, ValueError):
         duration_seconds = None
 
+    # A degraded YouTube response (bot challenge / stale cookies) comes back with
+    # no duration and no real formats - only storyboard images. Fail loudly with
+    # an actionable message instead of persisting a broken project.
+    has_media_formats = any(
+        (f or {}).get("vcodec") not in (None, "none")
+        or (f or {}).get("acodec") not in (None, "none")
+        for f in (info.get("formats") or [])
+    )
+    if duration_seconds is None and not has_media_formats:
+        raise ExternalServiceError(
+            "The video host returned a degraded response (no duration or media "
+            "formats) - usually a YouTube bot challenge or expired cookies. "
+            "Refresh YTDLP_COOKIES_FILE or configure YTDLP_PROXY."
+        )
+
     max_seconds = settings.MAX_VIDEO_DURATION_SECONDS
     if duration_seconds is not None and duration_seconds > max_seconds:
         raise ValidationError(
