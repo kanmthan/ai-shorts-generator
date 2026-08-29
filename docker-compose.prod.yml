@@ -22,6 +22,19 @@ services:
   api:
     ports: !override
       - "127.0.0.1:8000:8000"
+    volumes:
+      - ./secrets:/run/secrets:ro
+
+  # yt-dlp / transcript fetches run here; mount browser-exported YouTube cookies
+  # (put a Netscape cookies.txt at ./secrets/youtube-cookies.txt on the host and
+  # set YTDLP_COOKIES_FILE=/run/secrets/youtube-cookies.txt in .env).
+  worker:
+    volumes:
+      - ./secrets:/run/secrets:ro
+
+  beat:
+    volumes:
+      - ./secrets:/run/secrets:ro
 
   frontend:
     build:

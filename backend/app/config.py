@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     # ---- Media / pipeline ----
     FFMPEG_BINARY: str = "ffmpeg"
     YTDLP_BINARY: str = "yt-dlp"
+    # YouTube blocks yt-dlp / transcript fetches from datacenter IPs. Point this
+    # at a Netscape-format cookies.txt exported from a logged-in browser, and/or
+    # route requests through a residential proxy.
+    YTDLP_COOKIES_FILE: str = ""
+    YTDLP_PROXY: str = ""
     MEDIA_ROOT: str = "./media"
     MAX_VIDEO_DURATION_SECONDS: int = 14400
     MAX_OUTPUT_FILE_MB: int = 200

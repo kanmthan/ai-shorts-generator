@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from app.config import settings
 from app.exceptions import ExternalServiceError, ValidationError
 from app.logging_config import get_logger
+from app.services.ytdlp import build_ydl_opts
 
 __all__ = ["VideoMeta", "fetch_metadata"]
 
@@ -31,17 +32,6 @@ class VideoMeta:
     thumbnail_url: str | None
 
 
-_YDL_OPTS: dict[str, object] = {
-    "skip_download": True,
-    "quiet": True,
-    "no_warnings": True,
-    "noplaylist": True,
-    "socket_timeout": 30,
-    # Never let yt-dlp write anything to disk during metadata probing.
-    "writesubtitles": False,
-    "writeautomaticsub": False,
-    "writethumbnail": False,
-}
 
 
 def fetch_metadata(url: str) -> VideoMeta:
@@ -64,7 +54,7 @@ def fetch_metadata(url: str) -> VideoMeta:
         raise ExternalServiceError("yt-dlp is not installed in this environment") from exc
 
     try:
-        with yt_dlp.YoutubeDL(_YDL_OPTS) as ydl:
+        with yt_dlp.YoutubeDL(build_ydl_opts()) as ydl:
             info = ydl.extract_info(url, download=False)
     except (DownloadError, ExtractorError) as exc:
         logger.info("yt-dlp failed to extract %s: %s", url, exc)

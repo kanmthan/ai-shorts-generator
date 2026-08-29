@@ -181,15 +181,9 @@ def _try_ytdlp_subtitles(url: str) -> TranscriptSegments | None:
         logger.warning("yt-dlp not installed; skipping strategy 2")
         return None
 
-    opts: dict[str, object] = {
-        "skip_download": True,
-        "quiet": True,
-        "no_warnings": True,
-        "noplaylist": True,
-        "socket_timeout": 30,
-        "writesubtitles": False,
-        "writeautomaticsub": False,
-    }
+    from app.services.ytdlp import build_ydl_opts
+
+    opts = build_ydl_opts()
     try:
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=False)
