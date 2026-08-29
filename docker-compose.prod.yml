@@ -1,0 +1,28 @@
+# Production override for a public VPS.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# vs the base compose:
+#   - db / redis are NOT published to the host (internal network only)
+#   - api is bound to 127.0.0.1 (reach it via an SSH tunnel, not the internet;
+#     the frontend nginx proxies /api over the compose network)
+#   - frontend is published on :8080 so it does not collide with a host
+#     reverse proxy already owning :80 / :443
+#
+# To serve it on a real domain with TLS, front `frontend` with your reverse
+# proxy (see docker-compose.traefik.yml for a Traefik label set).
+
+services:
+  db:
+    ports: !override []
+
+  redis:
+    ports: !override []
+
+  api:
+    ports: !override
+      - "127.0.0.1:8000:8000"
+
+  frontend:
+    ports: !override
+      - "8080:80"

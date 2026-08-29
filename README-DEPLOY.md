@@ -37,6 +37,26 @@ docker compose up --build -d
 
 The `api` service runs `alembic upgrade head` before starting uvicorn.
 
+## 3b. Public VPS
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+`docker-compose.prod.yml` keeps `db` / `redis` off the host, binds `api` to
+`127.0.0.1:8000`, and publishes only the frontend on `:8080`
+(→ `http://SERVER_IP:8080`).
+
+To serve it on a domain with TLS via an existing Traefik v3 + Let's Encrypt:
+
+```bash
+APP_DOMAIN=shorts.example.com \
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+                 -f docker-compose.traefik.yml up -d
+```
+
+(DNS A record for `APP_DOMAIN` → server IP must exist first.)
+
 ## Services & ports
 
 | Service | Port (host) | Notes |

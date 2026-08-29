@@ -1,0 +1,25 @@
+# Route the frontend through an existing host Traefik (v3) with Let's Encrypt.
+#
+# Prereqs on the host:
+#   - Traefik already running, docker provider enabled, entrypoints
+#     web(:80) / websecure(:443), an ACME certresolver named "letsencrypt".
+#   - A DNS A record for ${APP_DOMAIN} pointing at this server's public IP.
+#
+# Then:
+#   APP_DOMAIN=shorts.example.com \
+#     docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#                    -f docker-compose.traefik.yml up -d
+#
+# This drops the :8080 host publish and lets Traefik terminate TLS and proxy
+# to the frontend container on its internal port 80.
+
+services:
+  frontend:
+    ports: !override []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ai-shorts.rule=Host(`${APP_DOMAIN:?set APP_DOMAIN}`)"
+      - "traefik.http.routers.ai-shorts.entrypoints=websecure"
+      - "traefik.http.routers.ai-shorts.tls=true"
+      - "traefik.http.routers.ai-shorts.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ai-shorts.loadbalancer.server.port=80"
