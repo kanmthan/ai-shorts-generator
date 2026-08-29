@@ -10,12 +10,12 @@
 #     docker compose -f docker-compose.yml -f docker-compose.prod.yml \
 #                    -f docker-compose.traefik.yml up -d
 #
-# This drops the :8080 host publish and lets Traefik terminate TLS and proxy
-# to the frontend container on its internal port 80.
+# Traefik terminates TLS and proxies to the frontend container on port 80.
+# The :8080 host publish from docker-compose.prod.yml is kept as a fallback;
+# drop it later by editing that file if you want the domain to be the only way in.
 
 services:
   frontend:
-    ports: !override []
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ai-shorts.rule=Host(`${APP_DOMAIN:?set APP_DOMAIN}`)"
