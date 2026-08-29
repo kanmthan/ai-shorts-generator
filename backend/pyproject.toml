@@ -1,0 +1,41 @@
+[project]
+name = "ai-shorts-generator-backend"
+version = "1.0.0"
+description = "Backend API for the AI Shorts Generator"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-ra -q --strict-markers"
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "alembic/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["app", "tests"]
+exclude = ["alembic/versions", ".venv", "media"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "C4", "SIM", "TID", "RUF"]
+ignore = ["B008"]  # FastAPI uses function calls (Depends()) in argument defaults
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+# Test code: allow asserts, long fixture data lines, dict() calls in factories,
+# and imports after the env-var setup block that must precede app imports.
+"tests/*" = ["S101", "E501", "C408", "E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]

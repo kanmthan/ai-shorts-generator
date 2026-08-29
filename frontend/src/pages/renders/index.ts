@@ -1,0 +1,1 @@
+export { RendersPage } from '../RendersPage';

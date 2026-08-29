@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1
+#
+# Celery worker / beat image for the AI Shorts Generator.
+# Reuses the API image (which already carries ffmpeg + the yt-dlp Python
+# package + all Python deps) and just swaps the default command.
+#
+# Build the API image first (docker-compose does this automatically):
+#   docker build -t ai-shorts-api ./backend
+#
+FROM ai-shorts-api:latest
+
+# Already root-dropped to "appuser" in the base image. ffmpeg and yt-dlp
+# are on PATH:  ffmpeg -version  /  yt-dlp --version
+#
+# Default: run the Celery worker.
+CMD ["celery", "-A", "app.tasks.celery_app", "worker", "--loglevel=info"]
+
+# Beat scheduler variant (used by the "beat" compose service via `command:`):
+# CMD ["celery", "-A", "app.tasks.celery_app", "beat", "--loglevel=info"]

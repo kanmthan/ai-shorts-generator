@@ -1,0 +1,48 @@
+# Development override.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# - Backend code is bind-mounted; uvicorn / celery reload on change.
+# - Frontend runs the Vite dev server (no nginx build) on :3000.
+
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./backend:/app
+      - media:/app/media
+    environment:
+      MEDIA_ROOT: /app/media
+      PYTHONDONTWRITEBYTECODE: "1"
+
+  worker:
+    command: ["celery", "-A", "app.tasks.celery_app", "worker", "--loglevel=debug"]
+    volumes:
+      - ./backend:/app
+      - media:/app/media
+
+  beat:
+    command: ["celery", "-A", "app.tasks.celery_app", "beat", "--loglevel=debug"]
+    volumes:
+      - ./backend:/app
+      - media:/app/media
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: build
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      VITE_API_URL: http://localhost:8000
