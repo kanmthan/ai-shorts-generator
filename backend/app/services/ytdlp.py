@@ -7,12 +7,30 @@ a browser-exported cookies file and/or an outbound proxy.
 from __future__ import annotations
 
 import os
+import shutil
+import tempfile
 from typing import Any
 
 from app.config import settings
 from app.logging_config import get_logger
 
 logger = get_logger("services.ytdlp")
+
+# yt-dlp rewrites `cookiefile` on exit, and its rewrite drops cookies it deems
+# out of scope - which breaks a browser-exported YouTube session. So we always
+# hand yt-dlp a private copy and leave the mounted original untouched.
+_COOKIE_WORKDIR = os.path.join(tempfile.gettempdir(), "ytdlp-cookies")
+
+
+def _writable_cookie_copy(src: str) -> str | None:
+    try:
+        os.makedirs(_COOKIE_WORKDIR, exist_ok=True)
+        dst = os.path.join(_COOKIE_WORKDIR, "cookies.txt")
+        shutil.copyfile(src, dst)
+        return dst
+    except OSError:
+        logger.exception("Could not stage a writable cookie copy from %s", src)
+        return None
 
 _BASE: dict[str, Any] = {
     "skip_download": True,
@@ -39,7 +57,8 @@ def build_ydl_opts(extra: dict[str, Any] | None = None) -> dict[str, Any]:
     cookies = settings.YTDLP_COOKIES_FILE.strip()
     if cookies:
         if os.path.isfile(cookies):
-            opts["cookiefile"] = cookies
+            staged = _writable_cookie_copy(cookies)
+            opts["cookiefile"] = staged or cookies
         else:
             logger.warning("YTDLP_COOKIES_FILE=%s not found; continuing without cookies", cookies)
 
